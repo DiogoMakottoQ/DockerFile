@@ -1,0 +1,94 @@
+version: "3"
+services:
+  flowable-db:
+    image: postgres # <https://hub.docker.com/_/postgres>
+    environment:
+      # Required environment properties
+      POSTGRES_PASSWORD: flowable
+      # Optional environment properties (with default values);
+      POSTGRES_USER: flowable
+      POSTGRES_DB: flowable
+      # POSTGRES_INITDB_ARGS
+      # POSTGRES_INITDB_WALDIR
+      # POSTGRES_HOST_AUTH_METHOD
+      # PGDATA
+    ports:
+      - 5432:5432
+  flowable-idm:
+    image: flowable/flowable-idm
+    depends_on:
+      - flowable-db
+    ports:
+      - 8081:8080
+    environment:
+      # Optional environment properties (with default values);
+      # SERVER_PORT: 8080
+      SPRING_DATASOURCE_DRIVER-CLASS-NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_URL: jdbc:postgresql://flowable-db:5432/flowable
+      SPRING_DATASOURCE_USERNAME: flowable
+      SPRING_DATASOURCE_PASSWORD: flowable
+      # FLOWABLE_REST_APP_ADMIN_USER-ID=rest-admin
+      # FLOWABLE_REST_APP_ADMIN_PASSWORD=test
+      # FLOWABLE_REST_APP_ADMIN_FIRST-NAME=Rest
+      # FLOWABLE_REST_APP_ADMIN_LAST-NAME=Admin
+    expose:
+      - 8080
+  flowable-task:
+    image: flowable/flowable-task
+    depends_on:
+      - flowable-db
+      - flowable-idm
+    ports:
+      - 9999:9999
+    environment:
+      # Required environment properties
+      FLOWABLE_COMMON_APP_IDM-URL: http://flowable-idm:8080/flowable-idm
+      FLOWABLE_COMMON_APP_IDM-ADMIN_USER: admin
+      FLOWABLE_COMMON_APP_IDM-ADMIN_PASSWORD: test
+      # Optional environment properties
+      FLOWABLE_COMMON_APP_IDM-REDIRECT-URL: http://localhost:8081/flowable-idm
+      # SERVER_PORT: 9999
+      SPRING_DATASOURCE_DRIVER-CLASS-NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_URL: jdbc:postgresql://flowable-db:5432/flowable
+      SPRING_DATASOURCE_USERNAME: flowable
+      SPRING_DATASOURCE_PASSWORD: flowable
+  flowable-modeler:
+    image: flowable/flowable-modeler
+    depends_on:
+      - flowable-db
+      - flowable-idm
+      - flowable-task
+    ports:
+      - 8888:8888
+    environment:
+      # Required environment properties
+      FLOWABLE_COMMON_APP_IDM-URL: http://flowable-idm:8080/flowable-idm
+      FLOWABLE_COMMON_APP_IDM-ADMIN_USER: admin
+      FLOWABLE_COMMON_APP_IDM-ADMIN_PASSWORD: test
+      # Optional environment properties
+      # SERVER_PORT: 8888
+      FLOWABLE_COMMON_APP_IDM-REDIRECT-URL: http://localhost:8081/flowable-idm
+      FLOWABLE_MODELER_APP_DEPLOYMENT-API-URL: http://localhost:8082/flowable-task/app-api
+      SPRING_DATASOURCE_DRIVER-CLASS-NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_URL: jdbc:postgresql://flowable-db:5432/flowable
+      SPRING_DATASOURCE_USERNAME: flowable
+      SPRING_DATASOURCE_PASSWORD: flowable
+  flowable-admin:
+    image: flowable/flowable-admin
+    depends_on:
+      - flowable-db
+      - flowable-idm
+    ports:
+      - 9988:9988
+    environment:
+      # Required environment properties
+      FLOWABLE_COMMON_APP_IDM-URL: http://flowable-idm:8080/flowable-idm
+      FLOWABLE_COMMON_APP_IDM-ADMIN_USER: admin
+      FLOWABLE_COMMON_APP_IDM-ADMIN_PASSWORD: test
+      # Optional environment properties
+      # SERVER_PORT: 9988
+      FLOWABLE_COMMON_APP_IDM-REDIRECT-URL: http://localhost:8081/flowable-idm
+      SPRING_DATASOURCE_DRIVER-CLASS-NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_URL: jdbc:postgresql://flowable-db:5432/flowable
+      SPRING_DATASOURCE_USERNAME: flowable
+      SPRING_DATASOURCE_PASSWORD: flowable
