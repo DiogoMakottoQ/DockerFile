@@ -1,5 +1,5 @@
 FROM flowable/flowable-ui AS flowable-ui
-ENTRYPOINT ["docker run -p8080:8080 flowable/flowable-rest"]
+ENTRYPOINT ["docker run -p8080:8080 flowable/flowable-ui"]
 
 FROM flowable/flowable-rest AS flowable-rest
 ENTRYPOINT ["docker run -p8081:8080 flowable/flowable-rest"]
